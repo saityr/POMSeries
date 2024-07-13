@@ -24,7 +24,7 @@ public class Appconstants {
 	
 	
 	public static final String LOGIN_TITLE=  "Account Login";
-	public static final String ACCOUNTS_TITLE= "My Account";
+	public static final String ACCOUNTS_TITLE= "My Account1";
 	public static final String LOGIN_FRACTION_URL = "route=account/login";
 	public static final String ACC_FRACTION_URL = "route=account/account";
 	

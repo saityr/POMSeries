@@ -22,11 +22,11 @@ public class DriverFactory {
 	public static String highlight;
 
 	public static ThreadLocal<WebDriver> tlDriver = new ThreadLocal<WebDriver>();
-	
+
 	public WebDriver initDriver(Properties prop) {
-		
-		highlight=prop.getProperty(highlight);
-		
+
+		highlight = prop.getProperty("highlight");
+
 		String bn = prop.getProperty("browser");
 		switch (bn.toLowerCase().trim()) {
 		case "chrome":
@@ -54,15 +54,13 @@ public class DriverFactory {
 		return tlDriver.get();
 	}
 
-	public Properties init()
-	{
+	public Properties init() {
 
-	
 		// mvn clean install -Denv="qa"
 		String envName = System.getProperty("env");
 		prop = new Properties();
 		FileInputStream fis = null;
-		
+
 		if (envName == null) {
 			System.out.println("env name is not given, hence running it on QA environment....");
 			try {
@@ -72,32 +70,31 @@ public class DriverFactory {
 			}
 		} else {
 
+			try {
+				switch (envName.trim().toLowerCase()) {
+				case "qa":
+					fis = new FileInputStream("./src/test/resources/config/qa.properties");
+					break;
+				case "stage":
+					fis = new FileInputStream("./src/test/resources/config/stage.properties");
+					break;
+				case "config":
+					fis = new FileInputStream("./src/test/resources/config/config.properties");
+					break;
 
-		try {
-			switch (envName.trim().toLowerCase()) {
-			case "qa":
-				fis = new FileInputStream("./src/test/resources/config/qa.properties");
-				break;
-			case "stage":
-				fis = new FileInputStream("./src/test/resources/config/stage.properties");
-				break;
-			case "config":
-				fis = new FileInputStream("./src/test/resources/config/config.properties");
-				break;
+				default:
+					break;
+				}
 
-			default:
-				break;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			}
 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}
 		try {
 			prop.load(fis);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		return prop;
 		}
 		return prop;
 	}
