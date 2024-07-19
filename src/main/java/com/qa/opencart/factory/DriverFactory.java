@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.openqa.selenium.OutputType;
@@ -12,6 +14,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.io.FileHandler;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.qa.opencart.errors.AppError;
 import com.qa.opencart.exceptions.BrowserExceptions;
@@ -20,18 +23,31 @@ public class DriverFactory {
 	Properties prop;
 	WebDriver driver;
 	public static String highlight;
+	OptionsManager om;
 
 	public static ThreadLocal<WebDriver> tlDriver = new ThreadLocal<WebDriver>();
 
 	public WebDriver initDriver(Properties prop) {
 
 		highlight = prop.getProperty("highlight");
+		om = new OptionsManager(prop);
 
 		String bn = prop.getProperty("browser");
 		switch (bn.toLowerCase().trim()) {
 		case "chrome":
-			// driver = new ChromeDriver();
-			tlDriver.set(new ChromeDriver());
+			
+			if(Boolean.parseBoolean(prop.getProperty("remote")))
+				{
+				// run on grid
+				initRemoteDriver("chrome");
+				}
+			else {
+				
+
+				// driver = new ChromeDriver();
+				tlDriver.set(new ChromeDriver());
+			
+			}
 			break;
 		case "firefox":
 			// driver = new FirefoxDriver();
@@ -49,7 +65,38 @@ public class DriverFactory {
 		return getDriver();
 
 	}
+	
+	private void initRemoteDriver(String browserName) {
+		System.out.println("Rnning it on GRID...with browser: " + browserName);
 
+		try {
+			switch (browserName) {
+			case "chrome":
+				tlDriver.set(
+						new RemoteWebDriver(new URL(prop.getProperty("huburl")), om.getChromeOptions()));
+				break;
+			case "firefox":
+				tlDriver.set(
+						new RemoteWebDriver(new URL(prop.getProperty("huburl")), om.getFirefoxOptions()));
+				break;
+			case "edge":
+				tlDriver.set(new RemoteWebDriver(new URL(prop.getProperty("huburl")), om.getEdgeOptions()));
+				break;
+
+			default:
+				System.out.println("plz pass the right browser on grid..");
+				throw new BrowserExceptions(AppError.BROWSER_NOT_FOUND);
+			}
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	
+	
+	
 	public static WebDriver getDriver() {
 		return tlDriver.get();
 	}
